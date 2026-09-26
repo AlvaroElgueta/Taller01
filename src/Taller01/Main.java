@@ -34,6 +34,12 @@ public class Main {
 	//atributos de rechazados
 	private static int contRechazados;
 	private static String[] rechazados = new String[100];
+
+	//atributos para estadisticas
+	private static int contIntentosAutomaticos;
+	private static int contRechazosAutomaticos;
+	private static int contIntentosManuales;
+	private static int contRechazosManuales;
 	
 	public static void main(String[] args) {
 		menu();
@@ -57,6 +63,10 @@ public class Main {
 			case 1: {
 				contAdmitidos = 0;
 				contRechazados = 0;
+				contIntentosAutomaticos = 0;
+				contRechazosAutomaticos = 0;
+				contIntentosManuales = 0;
+				contRechazosManuales = 0;
 				cargarAlumnos();
 				cargarSolicitudes();
 				s = new Scanner(System.in);
@@ -84,7 +94,7 @@ public class Main {
 				break;
 			}
 			case 6: {
-				
+				mostrarAnalisisEstadistico();
 				break;
 			}
 			case 7: {
@@ -403,6 +413,58 @@ public class Main {
 		return true;
 	}
 
+	//se encarga de mostrar las estadisticas del sistema
+	private static void mostrarAnalisisEstadistico() {
+		if (contAlumnos == 0) {
+			System.out.println("Primero debe cargar los archivos\r\n");
+			return;
+		}
+		int totalIntentos = contIntentosAutomaticos + contIntentosManuales;
+		int totalRechazos = contRechazosAutomaticos + contRechazosManuales;
+		int totalAdmisiones = totalIntentos - totalRechazos;
+		double porcentajeRechazo = 0;
+		double tasaAdmision = 0;
+		if (totalIntentos > 0) {
+			porcentajeRechazo = (double) totalRechazos * 100 / totalIntentos;
+			tasaAdmision = (double) totalAdmisiones * 100 / totalIntentos;
+		}
+		porcentajeRechazo = Math.round(porcentajeRechazo * 10.0) / 10.0;
+		tasaAdmision = Math.round(tasaAdmision * 10.0) / 10.0;
+
+		int alumnosC1 = 0;
+		int alumnosC2 = 0;
+		for (int i = 0; i < contAlumnos; i++) {
+			if (paralelosAlumnos[i].equalsIgnoreCase("C1")) {
+				alumnosC1++;
+			} else if (paralelosAlumnos[i].equalsIgnoreCase("C2")) {
+				alumnosC2++;
+			}
+		}
+		double porcentajeC1 = (double) alumnosC1 * 100 / contAlumnos;
+		double porcentajeC2 = (double) alumnosC2 * 100 / contAlumnos;
+		porcentajeC1 = Math.round(porcentajeC1 * 10.0) / 10.0;
+		porcentajeC2 = Math.round(porcentajeC2 * 10.0) / 10.0;
+
+		int admitidosC1 = 0;
+		int admitidosC2 = 0;
+		for (int i = 0; i < contAdmitidos; i++) {
+			if (paralelosAdmitidos[i].equalsIgnoreCase("C1")) {
+				admitidosC1++;
+			} else if (paralelosAdmitidos[i].equalsIgnoreCase("C2")) {
+				admitidosC2++;
+			}
+		}
+
+		System.out.println("--- Analisis estadistico ---\r\n"
+				+ "Total de intentos de ingreso: " + totalIntentos + "\r\n"
+				+ "Rechazados: " + totalRechazos + " (" + porcentajeRechazo + "%)\r\n"
+				+ "Tasa de admision: " + tasaAdmision + "%\r\n"
+				+ "Admitidos por paralelo -> C1: " + admitidosC1 + " | C2: " + admitidosC2 + "\r\n"
+				+ "Alumnos del curso -> C1: " + alumnosC1 + " (" + porcentajeC1 + "%) | C2: "
+				+ alumnosC2 + " (" + porcentajeC2 + "%)\r\n"
+				+ "Intentos manuales: " + contIntentosManuales + "\r\n");
+	}
+
 	//se encarga de mostrar el menu de inscripcion manual
 	private static void menuInscripcionManual() {
 		if (contAlumnos == 0) {
@@ -445,6 +507,7 @@ public class Main {
 			System.out.println("El rut no puede estar vacio");
 			return;
 		}
+		contIntentosManuales++;
 		boolean encontrado = false;
 		for (int i = 0; i < contAlumnos; i++) {
 			if (rut.equalsIgnoreCase(rutsAlumnos[i])) {
@@ -475,6 +538,7 @@ public class Main {
 			}
 		}
 		if (!encontrado) {
+			contRechazosManuales++;
 			if (contRechazados < 100) {
 				boolean repetido = false;
 				for (int i = 0; i < contRechazados; i++) {
@@ -505,6 +569,7 @@ public class Main {
 			System.out.println("El nombre y el apellido no pueden estar vacios");
 			return;
 		}
+		contIntentosManuales++;
 		boolean encontrado = false;
 		for (int i = 0; i < contAlumnos; i++) {
 			if (nombre.equalsIgnoreCase(nombresAlumnos[i]) && apellido.equalsIgnoreCase(apellidosAlumnos[i])) {
@@ -535,6 +600,7 @@ public class Main {
 			}
 		}
 		if (!encontrado) {
+			contRechazosManuales++;
 			if (contRechazados < 100) {
 				boolean repetido = false;
 				for (int i = 0; i < contRechazados; i++) {
@@ -562,6 +628,8 @@ public class Main {
 			return;
 		}
 		System.out.println("Procesando solicitudes...\r\n");
+		contIntentosAutomaticos = contSolicitudes;
+		contRechazosAutomaticos = 0;
 		for (int i = 0; i < contSolicitudes; i++) {
 			boolean encontrado = false;
 			for (int j = 0; j < contAlumnos; j++) {
@@ -591,6 +659,7 @@ public class Main {
 				}
 			}
 			if (!encontrado) {
+				contRechazosAutomaticos++;
 				if (contRechazados < 100) {
 					boolean repetido = false;
 					for (int j = 0; j < contRechazados; j++) {

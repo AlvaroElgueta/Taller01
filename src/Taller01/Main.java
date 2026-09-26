@@ -80,7 +80,7 @@ public class Main {
 				break;
 			}
 			case 5: {
-
+				menuReportes();
 				break;
 			}
 			case 6: {
@@ -286,6 +286,121 @@ public class Main {
 			System.out.println("No se pudieron guardar los cambios en Alumnos.txt\r\n");
 			return false;
 		}
+	}
+
+	//se encarga de mostrar el menu de reportes
+	private static void menuReportes() {
+		if (contAlumnos == 0) {
+			System.out.println("Primero debe cargar los archivos\r\n");
+			return;
+		}
+		boolean salir = false;
+		do {
+			System.out.println("--- Generar reportes ---\r\n"
+					+ "1) Reporte de miembros C1\r\n"
+					+ "2) Reporte de miembros C2\r\n"
+					+ "3) Reporte de rechazados\r\n"
+					+ "4) Volver\r\n");
+			int opcion = leerOpcion();
+			switch (opcion) {
+			case 1: {
+				generarReporteParalelo("C1");
+				break;
+			}
+			case 2: {
+				generarReporteParalelo("C2");
+				break;
+			}
+			case 3: {
+				generarReporteRechazados();
+				break;
+			}
+			case 4: {
+				salir = true;
+				break;
+			}
+			default: {
+				System.out.println("Debe ser una opcion valida(1/2/3/4)\r\n");
+				break;
+			}
+			}
+		} while (!salir);
+	}
+
+	//se encarga de generar el reporte de un paralelo
+	private static void generarReporteParalelo(String paralelo) {
+		if (!crearCarpetaReportes()) {
+			return;
+		}
+		String nombreBase = "Reporte" + paralelo;
+		int version = obtenerVersionReporte(nombreBase);
+		String nombreArchivo = "Reportes/" + nombreBase + "-V" + version + ".txt";
+		try {
+			BufferedWriter escritor = new BufferedWriter(new FileWriter(nombreArchivo));
+			escritor.write("=== Miembros del grupo - Paralelo " + paralelo + " ===");
+			escritor.newLine();
+			for (int i = 0; i < contAdmitidos; i++) {
+				if (paralelo.equalsIgnoreCase(paralelosAdmitidos[i])) {
+					escritor.write(nombresAdmitidos[i] + " " + apellidosAdmitidos[i]
+							+ " - " + rutsAdmitidos[i]);
+					escritor.newLine();
+				}
+			}
+			escritor.close();
+			System.out.println("Reporte generado: " + nombreArchivo + "\r\n");
+		} catch (IOException e) {
+			System.out.println("No se pudo generar el reporte de " + paralelo + "\r\n");
+		}
+	}
+
+	//se encarga de generar el reporte de rechazados
+	private static void generarReporteRechazados() {
+		if (!crearCarpetaReportes()) {
+			return;
+		}
+		String nombreBase = "Rechazados";
+		int version = obtenerVersionReporte(nombreBase);
+		String nombreArchivo = "Reportes/" + nombreBase + "-V" + version + ".txt";
+		try {
+			BufferedWriter escritor = new BufferedWriter(new FileWriter(nombreArchivo));
+			escritor.write("=== Solicitudes rechazadas ===");
+			escritor.newLine();
+			for (int i = 0; i < contRechazados; i++) {
+				if (rechazados[i].startsWith("Sin nombre registrado, RUT:")) {
+					escritor.write(rechazados[i]);
+				} else {
+					escritor.write(rechazados[i] + " - No pertenece a ningun paralelo del curso");
+				}
+				escritor.newLine();
+			}
+			escritor.close();
+			System.out.println("Reporte generado: " + nombreArchivo + "\r\n");
+		} catch (IOException e) {
+			System.out.println("No se pudo generar el reporte de rechazados\r\n");
+		}
+	}
+
+	//se encarga de obtener la siguiente version de un reporte
+	private static int obtenerVersionReporte(String nombreBase) {
+		int version = 1;
+		File archivo = new File("Reportes/" + nombreBase + "-V" + version + ".txt");
+		while (archivo.exists()) {
+			version++;
+			archivo = new File("Reportes/" + nombreBase + "-V" + version + ".txt");
+		}
+		return version;
+	}
+
+	//se encarga de crear la carpeta donde se guardan los reportes
+	private static boolean crearCarpetaReportes() {
+		File carpeta = new File("Reportes");
+		if (!carpeta.exists()) {
+			if (!carpeta.mkdir()) {
+				System.out.println("No se pudo crear la carpeta Reportes\r\n");
+				return false;
+			}
+		}
+		return true;
 	}
 
 	//se encarga de mostrar el menu de inscripcion manual
